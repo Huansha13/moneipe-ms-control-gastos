@@ -12,6 +12,28 @@ jobs:
     permissions:
       contents: read
       packages: write
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: moneipe
+          POSTGRES_PASSWORD: moneipe
+          POSTGRES_DB: moneipe_gastos
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U moneipe -d moneipe_gastos"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      SPRING_PROFILES_ACTIVE: dev
+      KEYCLOAK_ISSUER_URI: https://auth-moneipe-k3-dev.huansha.win/realms/moneipe-dev
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: moneipe_gastos
+      DB_USER: moneipe
+      DB_PASSWORD: moneipe
     steps:
       - uses: actions/checkout@v4
 

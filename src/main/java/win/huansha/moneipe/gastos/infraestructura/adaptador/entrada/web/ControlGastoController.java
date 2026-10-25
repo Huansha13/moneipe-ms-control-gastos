@@ -20,7 +20,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import win.huansha.moneipe.gastos.aplicacion.servicio.ControlGastoServicio;
+import win.huansha.moneipe.gastos.aplicacion.servicio.GrupoServicio;
 import win.huansha.moneipe.gastos.dominio.modelo.ControlGasto;
+import win.huansha.moneipe.gastos.dominio.modelo.Grupo;
 
 import java.util.Map;
 import java.util.UUID;
@@ -31,12 +33,13 @@ import java.util.UUID;
 public class ControlGastoController {
 
     private final ControlGastoServicio servicio;
+    private final GrupoServicio grupoServicio;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Mono<ControlGasto> crear(@RequestBody Map<String, String> body) {
         return usuarioActual().flatMap(uid ->
-            servicio.crear(body.get("titulo"), body.get("descripcion")));
+            servicio.crear(uid, body.get("titulo"), body.get("descripcion")));
     }
 
     @GetMapping("/{id}")
@@ -51,13 +54,21 @@ public class ControlGastoController {
 
     @PutMapping("/{id}")
     public Mono<ControlGasto> actualizar(@PathVariable UUID id, @RequestBody Map<String, String> body) {
-        return servicio.actualizar(id, body.get("titulo"), body.get("descripcion"));
+        return usuarioActual().flatMap(uid ->
+            servicio.actualizar(id, uid, body.get("titulo"), body.get("descripcion")));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> eliminar(@PathVariable UUID id) {
         return servicio.eliminar(id);
+    }
+
+    @PostMapping("/{id}/invitar")
+    public Mono<Grupo> invitar(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+        UUID usuarioId = UUID.fromString(body.get("usuarioId"));
+        String rol = body.getOrDefault("rol", "MEMBER");
+        return grupoServicio.invitar(id, usuarioId, rol);
     }
 
     private Mono<UUID> usuarioActual() {

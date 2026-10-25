@@ -10,7 +10,7 @@ import win.huansha.moneipe.gastos.dominio.modelo.ControlGasto;
 import win.huansha.moneipe.gastos.dominio.puerto.entrada.ControlGastoCasoUso;
 import win.huansha.moneipe.gastos.dominio.puerto.salida.ControlGastoRepositorio;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @org.springframework.stereotype.Service
@@ -20,14 +20,14 @@ public class ControlGastoServicio implements ControlGastoCasoUso {
     private final ControlGastoRepositorio repo;
 
     @Override
-    public Mono<ControlGasto> crear(String titulo, String descripcion) {
+    public Mono<ControlGasto> crear(UUID creadoPor, String titulo, String descripcion) {
         return Mono.just(ControlGasto.builder()
             .id(UUID.randomUUID())
             .titulo(titulo)
             .descripcion(descripcion)
-            .grupoId(null) // personal por defecto
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
+            .grupoId(null)
+            .createdBy(creadoPor)
+            .updatedBy(creadoPor)
             .build())
             .flatMap(repo::guardar);
     }
@@ -44,7 +44,7 @@ public class ControlGastoServicio implements ControlGastoCasoUso {
     }
 
     @Override
-    public Mono<ControlGasto> actualizar(UUID id, String titulo, String descripcion) {
+    public Mono<ControlGasto> actualizar(UUID id, UUID actualizadoPor, String titulo, String descripcion) {
         return repo.porId(id)
             .switchIfEmpty(Mono.error(new RecursoNoEncontradoExcepcion("Control no encontrado: " + id)))
             .map(existing -> ControlGasto.builder()
@@ -53,9 +53,9 @@ public class ControlGastoServicio implements ControlGastoCasoUso {
                 .descripcion(descripcion != null ? descripcion : existing.getDescripcion())
                 .grupoId(existing.getGrupoId())
                 .createdAt(existing.getCreatedAt())
-                .updatedAt(LocalDateTime.now())
+                .updatedAt(Instant.now())
                 .createdBy(existing.getCreatedBy())
-                .updatedBy(existing.getUpdatedBy())
+                .updatedBy(actualizadoPor)
                 .build())
             .flatMap(repo::guardar);
     }

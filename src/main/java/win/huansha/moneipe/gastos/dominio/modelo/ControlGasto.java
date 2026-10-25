@@ -1,6 +1,6 @@
 package win.huansha.moneipe.gastos.dominio.modelo;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -13,8 +13,8 @@ public class ControlGasto {
     String titulo;
     String descripcion;
     UUID grupoId;
-    LocalDateTime createdAt;
-    LocalDateTime updatedAt;
+    Instant createdAt;
+    Instant updatedAt;
     UUID createdBy;
     UUID updatedBy;
 }

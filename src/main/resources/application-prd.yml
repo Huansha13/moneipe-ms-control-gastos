@@ -1,0 +1,17 @@
+# Perfil PRD — SPRING_PROFILES_ACTIVE=prd. Sin secretos: todo por variables de entorno.
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # KEYCLOAK_ISSUER_URI obligatorio (dominio/realm de prd)
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
+  r2dbc:
+    password: ${DB_PASSWORD}
+  flyway:
+    password: ${DB_PASSWORD}
+
+logging:
+  level:
+    root: WARN
+    win.huansha.moneipe: INFO

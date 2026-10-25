@@ -4,11 +4,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:https://auth-moneipe-k3-dev.huansha.win/realms/moneipe-dev}
-  r2dbc:
-    password: ${DB_PASSWORD:moneipe}
-  flyway:
-    password: ${DB_PASSWORD:moneipe}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI}
 
 logging:
   level:

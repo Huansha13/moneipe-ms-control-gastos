@@ -1,0 +1,15 @@
+# application-test.yml — solo para CI/tests, no se usa en dev/qa/prd
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://auth-moneipe-k3-dev.huansha.win/realms/moneipe-dev
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/moneipe_gastos
+    username: moneipe
+    password: moneipe
+  flyway:
+    url: jdbc:postgresql://localhost:5432/moneipe_gastos
+    user: moneipe
+    password: moneipe

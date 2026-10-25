@@ -27,13 +27,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      SPRING_PROFILES_ACTIVE: dev
-      KEYCLOAK_ISSUER_URI: https://auth-moneipe-k3-dev.huansha.win/realms/moneipe-dev
-      DB_HOST: localhost
-      DB_PORT: 5432
-      DB_NAME: moneipe_gastos
-      DB_USER: moneipe
-      DB_PASSWORD: moneipe
+      SPRING_PROFILES_ACTIVE: test
     steps:
       - uses: actions/checkout@v4
 

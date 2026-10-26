@@ -28,6 +28,8 @@ public class GrupoEntity implements Persistable<UUID> {
     private UUID createdBy;
     @LastModifiedBy
     private UUID updatedBy;
+    private String estado;
+    private Instant deletedAt;
 
     @Transient
     private boolean nuevo = true;
@@ -55,4 +57,8 @@ public class GrupoEntity implements Persistable<UUID> {
     public void setCreatedBy(UUID createdBy) { this.createdBy = createdBy; }
     public UUID getUpdatedBy() { return updatedBy; }
     public void setUpdatedBy(UUID updatedBy) { this.updatedBy = updatedBy; }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
 }

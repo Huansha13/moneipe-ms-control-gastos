@@ -11,4 +11,5 @@ public interface GrupoRepositorio {
     Mono<Grupo> guardar(Grupo grupo);
     Mono<Grupo> porId(UUID id);
     Mono<Grupo> porControlId(UUID controlId);
+    Mono<Void> eliminar(UUID id);
 }

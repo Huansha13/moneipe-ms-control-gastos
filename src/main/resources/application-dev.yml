@@ -1,11 +1,4 @@
 # Perfil DEV (por defecto)
-spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
-
 logging:
   level:
     root: INFO

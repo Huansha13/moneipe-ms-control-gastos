@@ -12,4 +12,6 @@ public interface GrupoMiembroRepositorio {
     Flux<GrupoMiembro> porGrupo(UUID grupoId);
     Mono<Boolean> existe(UUID grupoId, UUID usuarioId);
     Flux<GrupoMiembro> porUsuario(UUID usuarioId);
+    Mono<Void> eliminar(UUID grupoId, UUID usuarioId);
+    Mono<Void> actualizarRol(UUID grupoId, UUID usuarioId, String rol);
 }

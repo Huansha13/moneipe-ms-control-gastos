@@ -10,11 +10,15 @@ import reactor.core.publisher.Mono;
 import win.huansha.moneipe.gastos.dominio.modelo.ControlGasto;
 import win.huansha.moneipe.gastos.dominio.puerto.salida.ControlGastoRepositorio;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
 public class ControlGastoAdaptador implements ControlGastoRepositorio {
+
+    private static final String ACTIVO = "ACTIVO";
+    private static final String ELIMINADO = "ELIMINADO";
 
     private final ControlGastoR2dbcRepository repo;
 
@@ -29,24 +33,37 @@ public class ControlGastoAdaptador implements ControlGastoRepositorio {
         e.setUpdatedAt(control.getUpdatedAt());
         e.setCreatedBy(control.getCreatedBy());
         e.setUpdatedBy(control.getUpdatedBy());
+        if (e.getEstado() == null) {
+            e.setEstado(ACTIVO);
+        }
         return repo.save(e).map(this::toDomain);
     }
 
     @Override
     public Mono<ControlGasto> porId(UUID id) {
-        return repo.findById(id).map(this::toDomain);
+        return repo.findById(id)
+            .filter(e -> ACTIVO.equals(e.getEstado()))
+            .map(this::toDomain);
     }
 
     @Override
     public Flux<ControlGasto> porCreador(UUID creadorId) {
         return repo.findAll()
-            .filter(e -> creadorId.equals(e.getCreatedBy()))
+            .filter(e -> creadorId.equals(e.getCreatedBy()) && ACTIVO.equals(e.getEstado()))
             .map(this::toDomain);
     }
 
     @Override
     public Mono<Void> eliminar(UUID id) {
-        return repo.deleteById(id);
+        return repo.findById(id)
+            .filter(e -> ACTIVO.equals(e.getEstado()))
+            .flatMap(e -> {
+                e.setEstado(ELIMINADO);
+                e.setDeletedAt(Instant.now());
+                e.setUpdatedAt(Instant.now());
+                return repo.save(e);
+            })
+            .then();
     }
 
     private ControlGasto toDomain(ControlGastoEntity e) {

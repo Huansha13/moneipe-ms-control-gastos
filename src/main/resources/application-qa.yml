@@ -1,10 +1,5 @@
 # Perfil QA — SPRING_PROFILES_ACTIVE=qa
 spring:
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI}
   r2dbc:
     password: ${DB_PASSWORD}
   flyway:

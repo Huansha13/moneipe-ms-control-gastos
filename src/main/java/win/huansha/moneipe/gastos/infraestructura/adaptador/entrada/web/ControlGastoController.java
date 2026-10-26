@@ -3,9 +3,7 @@ package win.huansha.moneipe.gastos.infraestructura.adaptador.entrada.web;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,8 +35,8 @@ public class ControlGastoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Mono<ControlGasto> crear(@RequestBody Map<String, String> body) {
-        return usuarioActual().flatMap(uid ->
+    public Mono<ControlGasto> crear(@RequestHeader("X-User-Id") String userId, @RequestBody Map<String, String> body) {
+        return usuarioActual(userId).flatMap(uid ->
             servicio.crear(uid, body.get("titulo"), body.get("descripcion")));
     }
 
@@ -48,13 +46,13 @@ public class ControlGastoController {
     }
 
     @GetMapping
-    public Flux<ControlGasto> listar() {
-        return usuarioActual().flatMapMany(servicio::listarMios);
+    public Flux<ControlGasto> listar(@RequestHeader("X-User-Id") String userId) {
+        return usuarioActual(userId).flatMapMany(servicio::listarMios);
     }
 
     @PutMapping("/{id}")
-    public Mono<ControlGasto> actualizar(@PathVariable UUID id, @RequestBody Map<String, String> body) {
-        return usuarioActual().flatMap(uid ->
+    public Mono<ControlGasto> actualizar(@PathVariable UUID id, @RequestHeader("X-User-Id") String userId, @RequestBody Map<String, String> body) {
+        return usuarioActual(userId).flatMap(uid ->
             servicio.actualizar(id, uid, body.get("titulo"), body.get("descripcion")));
     }
 
@@ -71,10 +69,7 @@ public class ControlGastoController {
         return grupoServicio.invitar(id, usuarioId, rol);
     }
 
-    private Mono<UUID> usuarioActual() {
-        return ReactiveSecurityContextHolder.getContext()
-            .map(ctx -> ctx.getAuthentication())
-            .cast(JwtAuthenticationToken.class)
-            .map(auth -> UUID.fromString(auth.getToken().getSubject()));
+    private Mono<UUID> usuarioActual(@RequestHeader("X-User-Id") String userId) {
+        return Mono.just(UUID.fromString(userId));
     }
 }

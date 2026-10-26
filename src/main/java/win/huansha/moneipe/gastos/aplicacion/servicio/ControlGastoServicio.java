@@ -2,6 +2,8 @@ package win.huansha.moneipe.gastos.aplicacion.servicio;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.stereotype.Service;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -13,7 +15,7 @@ import win.huansha.moneipe.gastos.dominio.puerto.salida.ControlGastoRepositorio;
 import java.time.Instant;
 import java.util.UUID;
 
-@org.springframework.stereotype.Service
+@Service
 @RequiredArgsConstructor
 public class ControlGastoServicio implements ControlGastoCasoUso {
 

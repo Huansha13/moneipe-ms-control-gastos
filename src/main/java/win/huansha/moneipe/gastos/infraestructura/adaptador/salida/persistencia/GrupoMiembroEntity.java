@@ -12,6 +12,8 @@ public class GrupoMiembroEntity {
     private UUID usuarioId;
     private String rol;
     private Instant fechaIngreso;
+    private String estado;
+    private Instant deletedAt;
 
     public GrupoMiembroEntity() {}
     public UUID getGrupoId() { return grupoId; }
@@ -22,4 +24,8 @@ public class GrupoMiembroEntity {
     public void setRol(String rol) { this.rol = rol; }
     public Instant getFechaIngreso() { return fechaIngreso; }
     public void setFechaIngreso(Instant fechaIngreso) { this.fechaIngreso = fechaIngreso; }
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
 }

@@ -149,6 +149,11 @@ public class ControlGastoController {
         return servicio.auditoria(id);
     }
 
+    @GetMapping("/estadisticas/mensual")
+    public Flux<java.util.Map<String, Object>> estadisticasMensual(@RequestHeader("X-User-Id") String userId) {
+        return usuarioActual(userId).flatMapMany(servicio::gastosPorMes);
+    }
+
     @GetMapping("/{id}/asignaciones")
     public Flux<ControlAsignacion> asignaciones(@PathVariable UUID id) {
         return servicio.asignaciones(id);

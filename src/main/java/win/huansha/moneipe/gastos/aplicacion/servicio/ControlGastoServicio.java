@@ -9,9 +9,9 @@ import reactor.core.publisher.Mono;
 
 import win.huansha.moneipe.gastos.dominio.excepcion.RecursoNoEncontradoExcepcion;
 import win.huansha.moneipe.gastos.dominio.modelo.AuditoriaGasto;
-import win.huansha.moneipe.gastos.dominio.modelo.AuditoriaGasto;
 import win.huansha.moneipe.gastos.dominio.modelo.ControlAsignacion;
 import win.huansha.moneipe.gastos.dominio.modelo.ControlGasto;
+import win.huansha.moneipe.gastos.dominio.modelo.Gasto;
 import win.huansha.moneipe.gastos.dominio.modelo.GrupoMiembro;
 import win.huansha.moneipe.gastos.dominio.puerto.entrada.ControlGastoCasoUso;
 import win.huansha.moneipe.gastos.dominio.puerto.salida.AuditoriaGastoRepositorio;
@@ -23,7 +23,6 @@ import win.huansha.moneipe.gastos.dominio.puerto.salida.GrupoMiembroRepositorio;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -32,6 +31,7 @@ public class ControlGastoServicio implements ControlGastoCasoUso {
 
     private final ControlGastoRepositorio repo;
     private final GastoRepositorio gastoRepo;
+    private final GastoServicio gastoServicio;
     private final GrupoMiembroRepositorio grupoMiembroRepo;
     private final AuditoriaGastoRepositorio auditoriaRepo;
     private final ControlAsignacionRepositorio asignacionRepo;
@@ -60,6 +60,27 @@ public class ControlGastoServicio implements ControlGastoCasoUso {
 
     public Flux<AuditoriaGasto> auditoria(UUID controlId) {
         return auditoriaRepo.porControl(controlId);
+    }
+
+    public Flux<java.util.Map<String, Object>> gastosPorMes(UUID usuarioId) {
+        return listarMios(usuarioId, null)
+            .flatMap(control -> gastoServicio.listarTodosPorControl(control.getId()))
+            .collectList()
+            .flatMapMany(gastos -> {
+                java.util.Map<String, java.math.BigDecimal> porMes = new java.util.TreeMap<>();
+                for (Gasto g : gastos) {
+                    if (g.getFecha() == null) continue;
+                    String mes = g.getFecha().getYear() + "-" + String.format("%02d", g.getFecha().getMonthValue());
+                    porMes.merge(mes, g.getMonto() != null ? g.getMonto() : java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+                }
+                return Flux.fromIterable(porMes.entrySet())
+                    .map(e -> {
+                        java.util.Map<String, Object> m = new java.util.HashMap<>();
+                        m.put("mes", e.getKey());
+                        m.put("total", e.getValue());
+                        return m;
+                    });
+            });
     }
 
     public Mono<ControlGasto> cambiarEstado(UUID id, String nuevoEstado) {

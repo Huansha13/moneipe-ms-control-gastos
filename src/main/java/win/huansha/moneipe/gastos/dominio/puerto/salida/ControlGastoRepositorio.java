@@ -11,5 +11,6 @@ public interface ControlGastoRepositorio {
     Mono<ControlGasto> guardar(ControlGasto control);
     Mono<ControlGasto> porId(UUID id);
     Flux<ControlGasto> porCreador(UUID creadorId);
+    Flux<ControlGasto> porGrupo(UUID grupoId);
     Mono<Void> eliminar(UUID id);
 }

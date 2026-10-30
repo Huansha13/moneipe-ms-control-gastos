@@ -54,6 +54,25 @@ public class GrupoController {
         return grupoServicio.miembros(id);
     }
 
+    @GetMapping("/grupos/{id}/miembros/usuarios")
+    public Flux<java.util.Map<String, Object>> miembrosUsuarios(@PathVariable UUID id) {
+        return grupoServicio.miembrosUsuarios(id);
+    }
+
+    @PostMapping("/grupos/{id}/miembros")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> agregarMiembro(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+        UUID usuarioId = UUID.fromString(body.get("usuarioId"));
+        String rol = body.getOrDefault("rol", "MEMBER");
+        return grupoServicio.agregarMiembro(id, usuarioId, rol);
+    }
+
+    @DeleteMapping("/grupos/{id}/miembros/{usuarioId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> eliminarMiembro(@PathVariable UUID id, @PathVariable UUID usuarioId) {
+        return grupoServicio.eliminarMiembro(id, usuarioId);
+    }
+
     @DeleteMapping("/grupos/{id}/salir")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public Mono<Void> salir(@PathVariable UUID id, @RequestHeader("X-User-Id") String userId) {

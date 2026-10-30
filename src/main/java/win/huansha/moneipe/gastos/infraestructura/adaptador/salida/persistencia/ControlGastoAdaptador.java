@@ -28,6 +28,10 @@ public class ControlGastoAdaptador implements ControlGastoRepositorio {
         e.setId(control.getId());
         e.setTitulo(control.getTitulo());
         e.setDescripcion(control.getDescripcion());
+        e.setTipo(control.getTipo());
+        e.setMoneda(control.getMoneda() != null ? control.getMoneda() : "PEN");
+        e.setEstadoControl(control.getEstadoControl() != null ? control.getEstadoControl() : "CREADO");
+        e.setAsignaciones(control.getAsignaciones());
         e.setGrupoId(control.getGrupoId());
         e.setCreatedAt(control.getCreatedAt());
         e.setUpdatedAt(control.getUpdatedAt());
@@ -54,6 +58,13 @@ public class ControlGastoAdaptador implements ControlGastoRepositorio {
     }
 
     @Override
+    public Flux<ControlGasto> porGrupo(UUID grupoId) {
+        return repo.findAll()
+            .filter(e -> grupoId.equals(e.getGrupoId()) && ACTIVO.equals(e.getEstado()))
+            .map(this::toDomain);
+    }
+
+    @Override
     public Mono<Void> eliminar(UUID id) {
         return repo.findById(id)
             .filter(e -> ACTIVO.equals(e.getEstado()))
@@ -71,6 +82,10 @@ public class ControlGastoAdaptador implements ControlGastoRepositorio {
             .id(e.getId())
             .titulo(e.getTitulo())
             .descripcion(e.getDescripcion())
+            .tipo(e.getTipo())
+            .moneda(e.getMoneda())
+            .estadoControl(e.getEstadoControl())
+            .asignaciones(e.getAsignaciones())
             .grupoId(e.getGrupoId())
             .createdAt(e.getCreatedAt())
             .updatedAt(e.getUpdatedAt())

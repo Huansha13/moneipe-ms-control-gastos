@@ -2,6 +2,7 @@ package win.huansha.moneipe.gastos.aplicacion.servicio;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,9 @@ public class GrupoServicio implements GrupoCasoUso {
     private final ControlGastoRepositorio controlRepo;
     private final GrupoRepositorio grupoRepo;
     private final GrupoMiembroRepositorio miembroRepo;
+
+    @Value("${ms.usuarios.base-url:http://localhost:8084}")
+    private String usuariosBaseUrl;
 
     @Override
     @Transactional
@@ -56,6 +60,9 @@ public class GrupoServicio implements GrupoCasoUso {
         return controlRepo.porId(controlId)
             .switchIfEmpty(Mono.error(new RecursoNoEncontradoExcepcion("Control no encontrado: " + controlId)))
             .flatMap(control -> {
+                if (!"CREADO".equals(control.getEstadoControl())) {
+                    return Mono.error(new IllegalStateException("No se pueden modificar miembros fuera de estado CREADO"));
+                }
                 if (control.getGrupoId() != null) {
                     return grupoRepo.porId(control.getGrupoId())
                         .flatMap(grupo -> agregarMiembro(grupo, usuarioId, rolFinal)
@@ -75,14 +82,19 @@ public class GrupoServicio implements GrupoCasoUso {
                             .id(control.getId())
                             .titulo(control.getTitulo())
                             .descripcion(control.getDescripcion())
+                            .tipo(control.getTipo())
                             .grupoId(grupoGuardado.getId())
                             .createdAt(control.getCreatedAt())
                             .updatedAt(Instant.now())
                             .createdBy(control.getCreatedBy())
                             .updatedBy(control.getCreatedBy())
                             .build();
+                        Mono<Void> agregar = agregarMiembro(grupoGuardado, control.getCreatedBy(), "ADMIN");
+                        if (!usuarioId.equals(control.getCreatedBy())) {
+                            agregar = agregar.then(agregarMiembro(grupoGuardado, usuarioId, rolFinal));
+                        }
                         return controlRepo.guardar(controlActualizado)
-                            .then(agregarMiembro(grupoGuardado, usuarioId, rolFinal))
+                            .then(agregar)
                             .thenReturn(grupoGuardado);
                     });
             });
@@ -136,11 +148,65 @@ public class GrupoServicio implements GrupoCasoUso {
     }
 
     @Override
+    public Flux<java.util.Map<String, Object>> miembrosUsuarios(UUID grupoId) {
+        return miembroRepo.porGrupo(grupoId)
+            .map(GrupoMiembro::getUsuarioId)
+            .distinct()
+            .flatMap(uid -> Mono.fromCallable(() -> {
+                java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
+                    .proxy(java.net.ProxySelector.of(null)).build();
+                java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder(
+                    java.net.URI.create(usuariosBaseUrl + "/api/usuarios/" + uid)).GET().build();
+                java.net.http.HttpResponse<String> resp = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+                String body = resp.body();
+                java.util.Map<String, Object> m = new java.util.HashMap<>();
+                m.put("id", uid.toString());
+                m.put("nombres", extractField(body, "nombres"));
+                m.put("apellidos", extractField(body, "apellidos"));
+                m.put("email", extractField(body, "email"));
+                m.put("username", extractField(body, "username"));
+                return m;
+            }).subscribeOn(reactor.core.scheduler.Schedulers.boundedElastic()));
+    }
+
+    private String extractField(String json, String field) {
+        if (json == null) return "";
+        int idx = json.indexOf("\"" + field + "\"");
+        if (idx < 0) return "";
+        int colon = json.indexOf(":", idx);
+        if (colon < 0) return "";
+        String rest = json.substring(colon + 1).trim();
+        if (rest.startsWith("\"")) {
+            int end = rest.indexOf("\"", 1);
+            return end > 0 ? rest.substring(1, end) : "";
+        }
+        int end = rest.indexOf(",");
+        if (end < 0) end = rest.indexOf("}");
+        return end > 0 ? rest.substring(0, end).trim() : rest.trim();
+    }
+
+    @Override
     public Flux<Grupo> listarMios(UUID usuarioId) {
         return miembroRepo.porUsuario(usuarioId)
             .map(GrupoMiembro::getGrupoId)
             .distinct()
-            .flatMap(grupoRepo::porId);
+            .flatMap(grupoRepo::porId)
+            .sort((a, b) -> {
+                if (a.getCreatedAt() == null) return 1;
+                if (b.getCreatedAt() == null) return -1;
+                return b.getCreatedAt().compareTo(a.getCreatedAt());
+            });
+    }
+
+    @Override
+    public Mono<Void> agregarMiembro(UUID grupoId, UUID usuarioId, String rol) {
+        String rolFinal = (rol != null && !rol.isBlank()) ? rol : "MEMBER";
+        return agregarMiembroPorId(grupoId, usuarioId, rolFinal);
+    }
+
+    @Override
+    public Mono<Void> eliminarMiembro(UUID grupoId, UUID usuarioId) {
+        return miembroRepo.eliminar(grupoId, usuarioId);
     }
 
     @Override

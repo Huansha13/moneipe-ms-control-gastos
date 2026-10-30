@@ -1,0 +1,1 @@
+ALTER TABLE controles_gasto ADD COLUMN IF NOT EXISTS asignaciones TEXT;

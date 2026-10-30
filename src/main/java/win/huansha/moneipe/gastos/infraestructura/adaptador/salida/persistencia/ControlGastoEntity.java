@@ -19,6 +19,10 @@ public class ControlGastoEntity implements Persistable<UUID> {
     private UUID id;
     private String titulo;
     private String descripcion;
+    private String tipo;
+    private String moneda;
+    private String estadoControl;
+    private String asignaciones;
     private UUID grupoId;
     @CreatedDate
     private Instant createdAt;
@@ -47,6 +51,14 @@ public class ControlGastoEntity implements Persistable<UUID> {
     public void setTitulo(String titulo) { this.titulo = titulo; }
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getMoneda() { return moneda; }
+    public void setMoneda(String moneda) { this.moneda = moneda; }
+    public String getEstadoControl() { return estadoControl; }
+    public void setEstadoControl(String estadoControl) { this.estadoControl = estadoControl; }
+    public String getAsignaciones() { return asignaciones; }
+    public void setAsignaciones(String asignaciones) { this.asignaciones = asignaciones; }
     public UUID getGrupoId() { return grupoId; }
     public void setGrupoId(UUID grupoId) { this.grupoId = grupoId; }
     public Instant getCreatedAt() { return createdAt; }

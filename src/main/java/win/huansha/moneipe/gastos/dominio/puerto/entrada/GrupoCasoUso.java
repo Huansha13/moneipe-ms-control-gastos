@@ -14,6 +14,9 @@ public interface GrupoCasoUso {
     Mono<Grupo> porControlId(UUID controlId);
     Flux<Grupo> listarMios(UUID usuarioId);
     Flux<GrupoMiembro> miembros(UUID grupoId);
+    Flux<java.util.Map<String, Object>> miembrosUsuarios(UUID grupoId);
+    Mono<Void> agregarMiembro(UUID grupoId, UUID usuarioId, String rol);
+    Mono<Void> eliminarMiembro(UUID grupoId, UUID usuarioId);
     Mono<Grupo> invitar(UUID controlId, UUID usuarioId, String rol);
     Mono<Void> salir(UUID grupoId, UUID usuarioId);
 }
